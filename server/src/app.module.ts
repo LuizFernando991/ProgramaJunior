@@ -3,13 +3,17 @@ import { EnvironmentConfigModule } from './infrastructure/config/environment-con
 import { UsecasesProxyModule } from './infrastructure/usecases-proxy/usecase-proxy.module'
 import { ConfigModule } from '@nestjs/config'
 import { PrismaModule } from './infrastructure/db/prisma.module'
+import { JwtModule } from '@nestjs/jwt'
 
 @Module({
   imports: [
     EnvironmentConfigModule,
     UsecasesProxyModule.register(),
     ConfigModule.forRoot({}),
-    PrismaModule
+    PrismaModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET
+    })
   ],
   controllers: [],
   providers: []
