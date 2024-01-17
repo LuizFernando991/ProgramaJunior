@@ -7,11 +7,128 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRoles {
+  admin
+  user
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  profileImage String?
+  label        String?
+  role         UserRoles @default(user)
+  password     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  curriculum   Curriculum?
+  applications Application[]
+}
+
+model Company {
+  id           Int      @id @default(autoincrement())
+  cppj         String   @unique
+  name         String
+  description  String?
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  jobs Job[]
+}
+
+enum JobStatus {
+  open
+  paused
+  complete
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  companyId   Int
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  status      JobStatus @default(open)
+
+  skills       Skill[]
+  company      Company       @relation(fields: [companyId], references: [id])
+  applications Application[]
+}
+
+enum ApplicationStatus {
+  pending
+  reject
+  accept
+}
+
+model Application {
+  id           Int               @id @default(autoincrement())
+  userId       Int
+  jobId        Int
+  curriculumId Int
+  status       ApplicationStatus @default(pending)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  job        Job        @relation(fields: [jobId], references: [id])
+  curriculum Curriculum @relation(fields: [curriculumId], references: [id])
+
+  @@unique([userId, jobId])
+}
+
+model Skill {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  jobs        Job[]
+  curriculuns Curriculum[]
+  experiences Experience[]
+}
+
+enum Career {
+  fullstack
+  frontend
+  backend
+}
+
+enum ContractType {
+  clt
+  pj
+  est
+}
+
+model Curriculum {
+  id              Int          @id @default(autoincrement())
+  userId          Int          @unique
+  description     String
+  phoneNumber     String
+  linkedinLink    String?
+  githubLink      String?
+  anexCV          String?
+  career          Career
+  contractType    ContractType
+  allowRemoteWork Boolean      @default(true)
+
+  experiences  Experience[]
+  skills       Skill[]
+  applications Application[]
+  user         User          @relation(fields: [userId], references: [id])
+}
+
+model Experience {
+  id           Int       @id @default(autoincrement())
+  functionName String
+  initalDate   DateTime
+  finalDate    DateTime?
+  isCurrentJob Boolean   @default(false)
+  companyName  String
+  description  String
+  curriculumId Int
+
+  skills     Skill[]
+  curriculum Curriculum @relation(fields: [curriculumId], references: [id])
 }
