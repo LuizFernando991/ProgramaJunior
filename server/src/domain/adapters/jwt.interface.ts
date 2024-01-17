@@ -13,7 +13,9 @@ export interface IJwtServiceActivationTokenPayload {
 
 export interface IJwtService {
   checkToken(token: string): Promise<any>
-  checkActiovationToken(token: string): Promise<any>
+  checkActiovationToken(
+    token: string
+  ): Promise<IJwtServiceActivationTokenPayload>
   createToken(
     payload: IJwtServicePayload,
     secret: string,

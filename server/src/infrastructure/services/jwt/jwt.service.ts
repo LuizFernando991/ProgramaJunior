@@ -15,7 +15,9 @@ export class JwtTokenService implements IJwtService {
     return decode
   }
 
-  async checkActiovationToken(token: string) {
+  async checkActiovationToken(
+    token: string
+  ): Promise<IJwtServiceActivationTokenPayload> {
     return await this.jwtService.verifyAsync(token)
   }
 

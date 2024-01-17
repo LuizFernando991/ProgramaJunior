@@ -5,9 +5,11 @@ import { JwtTokenService } from '../services/jwt/jwt.service'
 import { UseCaseProxy } from './usecase-proxy'
 import { RegisterUseCases } from 'src/usecases/auth/register.usecase'
 import { JwtModule } from '../services/jwt/jwt.module'
+import { RepositoriesModule } from '../repositories/repositories.module'
+import { DatabaseUserRepository } from '../repositories/user.repository'
 
 @Module({
-  imports: [EnvironmentConfigModule, JwtModule]
+  imports: [EnvironmentConfigModule, JwtModule, RepositoriesModule]
 })
 export class UsecasesProxyModule {
   static REGISTER_USECASES_PROXY = 'RegisterUseCasesProxy'
@@ -16,14 +18,23 @@ export class UsecasesProxyModule {
       module: UsecasesProxyModule,
       providers: [
         {
-          inject: [JwtTokenService, EnvironmentConfigService],
+          inject: [
+            JwtTokenService,
+            EnvironmentConfigService,
+            DatabaseUserRepository
+          ],
           provide: UsecasesProxyModule.REGISTER_USECASES_PROXY,
           useFactory: (
             jwtTokenService: JwtTokenService,
-            enviromentConfig: EnvironmentConfigService
+            enviromentConfig: EnvironmentConfigService,
+            userRepository: DatabaseUserRepository
           ) =>
             new UseCaseProxy(
-              new RegisterUseCases(jwtTokenService, enviromentConfig)
+              new RegisterUseCases(
+                jwtTokenService,
+                enviromentConfig,
+                userRepository
+              )
             )
         }
       ],

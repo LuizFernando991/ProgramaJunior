@@ -1,12 +1,14 @@
 // import { IBcryptService } from 'src/domain/adapters/bcrypt.interface'
 import { IJwtService } from 'src/domain/adapters/jwt.interface'
 import { EnviromentConfig } from 'src/domain/config/enviroment.interface'
+import { UserRepository } from 'src/domain/repositories/userRepositoryIInterface'
 
 export class RegisterUseCases {
   constructor(
     private readonly jwtTokenService: IJwtService,
-    private readonly enviromentConfig: EnviromentConfig
+    private readonly enviromentConfig: EnviromentConfig,
     // private readonly bcryptService: IBcryptService
+    private readonly userRepository: UserRepository
   ) {}
 
   private async createActivationToken(user: {
@@ -32,5 +34,34 @@ export class RegisterUseCases {
     )
 
     return { token, activationCode }
+  }
+
+  async register(user: { name: string; email: string; password: string }) {
+    const existsUser = await this.userRepository.getUserByEmail(user.email)
+
+    if (!!existsUser) {
+      return null //throw new error
+    }
+    // hash
+    const { token: activationToken, activationCode } =
+      await this.createActivationToken(user)
+
+    //send email to user
+    console.log(activationCode)
+
+    return { activationToken }
+  }
+
+  async saveUser(activationToke: string, code: string) {
+    const payload =
+      await this.jwtTokenService.checkActiovationToken(activationToke)
+
+    if (code !== payload.code) {
+      return null //throw new error
+    }
+
+    const newUser = await this.userRepository.insert(payload.user)
+
+    return { user: newUser }
   }
 }

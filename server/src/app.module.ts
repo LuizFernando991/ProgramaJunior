@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config'
 import { JwtModule as JwtServiceModule } from './infrastructure/services/jwt/jwt.module'
 import { PrismaModule } from './infrastructure/db/prisma.module'
 import { JwtModule } from '@nestjs/jwt'
+import { ControllersModule } from './infrastructure/controllers/controllers.module'
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { JwtModule } from '@nestjs/jwt'
     UsecasesProxyModule.register(),
     ConfigModule.forRoot({}),
     PrismaModule,
-    JwtServiceModule
+    JwtServiceModule,
+    ControllersModule
   ],
   controllers: [],
   providers: []
