@@ -1,5 +1,5 @@
-// import { IHashtService } from 'src/domain/adapters/hash.interface'
 import { IEmailsender } from 'src/domain/adapters/emailsender.interface'
+import { IHashService } from 'src/domain/adapters/hash.interface'
 import { IJwtService } from 'src/domain/adapters/jwt.interface'
 import { EnviromentConfig } from 'src/domain/config/enviroment.interface'
 import { UserRepository } from 'src/domain/repositories/userRepositoryIInterface'
@@ -8,9 +8,9 @@ export class RegisterUseCases {
   constructor(
     private readonly jwtTokenService: IJwtService,
     private readonly enviromentConfig: EnviromentConfig,
-    // private readonly hashService: IHashService
     private readonly userRepository: UserRepository,
-    private readonly emailSender: IEmailsender
+    private readonly emailSender: IEmailsender,
+    private readonly hashService: IHashService
   ) {}
 
   private async createActivationToken(user: {
@@ -45,10 +45,13 @@ export class RegisterUseCases {
       return null //throw new error
     }
 
-    // hash password
+    const hashPassword = await this.hashService.hash(user.password)
 
     const { token: activationToken, activationCode } =
-      await this.createActivationToken(user)
+      await this.createActivationToken({
+        ...user,
+        password: hashPassword
+      })
 
     this.emailSender.sendMail({
       subject: 'Ative sua conta!',
@@ -65,8 +68,8 @@ export class RegisterUseCases {
     const payload =
       await this.jwtTokenService.checkActiovationToken(activationToke)
 
-    if (code !== payload.code) {
-      return null //throw new error
+    if (!payload || code !== payload.code) {
+      return null //throw new error (bad request)
     }
 
     const newUser = await this.userRepository.insert(payload.user)
