@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
+import { NestExpressApplication } from '@nestjs/platform-express'
 import * as cookieParser from 'cookie-parser'
 import { AppModule } from './app.module'
+import { join } from 'path'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
   app.use(cookieParser())
 
@@ -15,6 +17,10 @@ async function bootstrap() {
       transform: true
     })
   )
+
+  app.useStaticAssets(join(__dirname, '..', 'public'))
+  app.setBaseViewsDir(join(__dirname, '..', 'email-template'))
+  app.setViewEngine('ejs')
 
   // base routing
   app.setGlobalPrefix('api_v1')

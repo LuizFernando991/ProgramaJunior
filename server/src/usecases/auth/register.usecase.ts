@@ -1,4 +1,5 @@
-// import { IBcryptService } from 'src/domain/adapters/bcrypt.interface'
+// import { IHashtService } from 'src/domain/adapters/hash.interface'
+import { IEmailsender } from 'src/domain/adapters/emailsender.interface'
 import { IJwtService } from 'src/domain/adapters/jwt.interface'
 import { EnviromentConfig } from 'src/domain/config/enviroment.interface'
 import { UserRepository } from 'src/domain/repositories/userRepositoryIInterface'
@@ -7,8 +8,9 @@ export class RegisterUseCases {
   constructor(
     private readonly jwtTokenService: IJwtService,
     private readonly enviromentConfig: EnviromentConfig,
-    // private readonly bcryptService: IBcryptService
-    private readonly userRepository: UserRepository
+    // private readonly hashService: IHashService
+    private readonly userRepository: UserRepository,
+    private readonly emailSender: IEmailsender
   ) {}
 
   private async createActivationToken(user: {
@@ -42,12 +44,19 @@ export class RegisterUseCases {
     if (!!existsUser) {
       return null //throw new error
     }
-    // hash
+
+    // hash password
+
     const { token: activationToken, activationCode } =
       await this.createActivationToken(user)
 
-    //send email to user
-    console.log(activationCode)
+    this.emailSender.sendMail({
+      subject: 'Ative sua conta!',
+      email: user.email,
+      template: './register-template.ejs',
+      name: user.name,
+      activationCode
+    })
 
     return { activationToken }
   }

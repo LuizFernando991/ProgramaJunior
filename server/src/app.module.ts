@@ -15,8 +15,10 @@ import { ControllersModule } from './infrastructure/controllers/controllers.modu
       secret: process.env.JWT_SECRET
     }),
     EnvironmentConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
     UsecasesProxyModule.register(),
-    ConfigModule.forRoot({}),
     PrismaModule,
     JwtServiceModule,
     ControllersModule
